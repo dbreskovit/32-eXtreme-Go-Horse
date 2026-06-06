@@ -415,7 +415,7 @@ npm run migration:run
 
 ## 🎬 Pitch
 
-🎥 **Link do Pitch (até 3 minutos):** *A preencher*
+🎥 **Link do Pitch (até 3 minutos):** https://youtu.be/PMENfSooTSM
 
 ---
 
