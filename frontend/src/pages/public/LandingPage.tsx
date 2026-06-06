@@ -1,159 +1,200 @@
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { PLANOS } from '../../mocks/data'
+
+const fade = (delay = 0) => ({
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1], delay },
+})
+
+const STATS = [
+  { value: '+20%', label: 'custo de frete no pico da safra' },
+  { value: '356 Mt', label: 'colhidos na safra 25/26' },
+  { value: '1,2 bi L', label: 'de diesel extras em 2025' },
+]
+
+const HOW = [
+  { n: '01', title: 'Cadastre suas docas', body: 'Configure capacidade e janelas de operação de cada ponto de descarga.' },
+  { n: '02', title: 'Motorista agenda', body: 'Escolhe doca, data e horário pelo celular em menos de 1 minuto.' },
+  { n: '03', title: 'QR na guarita', body: 'Operador lê o código — o sistema direciona o caminhão para a doca certa.' },
+  { n: '04', title: 'Analytics em tempo real', body: 'Painel ao vivo: fluxo por hora, alertas de capacidade e relatório de CO₂.' },
+]
 
 export function LandingPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="fixed top-0 inset-x-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="text-xl font-bold text-green-700">🌾 FluxoGrão</span>
-          <div className="flex gap-3">
-            <button
-              onClick={() => navigate('/login')}
-              className="px-4 py-2 text-sm text-green-700 font-medium hover:bg-green-50 rounded-lg transition-colors"
-            >
-              Entrar
-            </button>
-            <button
-              onClick={() => navigate('/cadastro')}
-              className="px-4 py-2 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Começar grátis
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="grain min-h-screen" style={{ fontFamily: 'var(--font-sans)' }}>
 
-      {/* Hero */}
-      <section className="pt-28 pb-20 px-6 bg-gradient-to-br from-green-50 to-amber-50">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full mb-6">
-            Code Race 2026 · Agronegócio Inteligente
-          </div>
-          <h1 className="text-5xl font-bold text-gray-900 leading-tight mb-6">
-            Diga adeus às filas de<br />
-            <span className="text-green-600">caminhões no silo</span>
-          </h1>
-          <p className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto">
-            FluxoGrão traz o sistema de agendamento por janela horária dos grandes portos
-            direto para cooperativas e silos do interior.
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <button
-              onClick={() => navigate('/cadastro')}
-              className="px-8 py-3.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-200"
-            >
+      {/* ── NAV ── */}
+      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-12 h-16"
+           style={{ background: 'rgba(10,16,8,0.7)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <span style={{ fontFamily: 'var(--font-display)', color: 'var(--harvest)', fontSize: '1.25rem' }}>
+          FluxoGrão
+        </span>
+        <div className="flex gap-2">
+          <button onClick={() => navigate('/login')}
+            className="px-4 py-1.5 text-sm rounded-full transition-all"
+            style={{ color: 'var(--mist)', border: '1px solid rgba(255,255,255,0.12)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+            Entrar
+          </button>
+          <button onClick={() => navigate('/cadastro')}
+            className="px-4 py-1.5 text-sm rounded-full font-semibold transition-all"
+            style={{ background: 'var(--grain)', color: 'var(--earth)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--harvest)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--grain)')}>
+            Começar grátis
+          </button>
+        </div>
+      </nav>
+
+      {/* ── HERO ── */}
+      <section className="relative flex flex-col items-center justify-center min-h-screen px-6 text-center overflow-hidden"
+               style={{ background: 'var(--earth)' }}>
+        {/* Background gradient blobs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute rounded-full blur-3xl opacity-20"
+               style={{ width: 600, height: 600, top: '10%', left: '50%', transform: 'translateX(-50%)',
+                        background: 'radial-gradient(circle, #1A4A2E 0%, transparent 70%)' }} />
+          <div className="absolute rounded-full blur-3xl opacity-15"
+               style={{ width: 300, height: 300, bottom: '20%', right: '15%',
+                        background: 'radial-gradient(circle, #F59E0B 0%, transparent 70%)' }} />
+        </div>
+
+        <motion.div {...fade(0.1)} className="relative z-10 max-w-4xl mx-auto">
+          <motion.div {...fade(0)} className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-8"
+                      style={{ border: '1px solid rgba(245,158,11,0.3)', color: 'var(--grain)', background: 'rgba(245,158,11,0.08)' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-current" /> Code Race 2026 · Agronegócio Inteligente
+          </motion.div>
+
+          <motion.h1 {...fade(0.15)} className="leading-none mb-6"
+                     style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(3rem, 8vw, 6.5rem)',
+                              color: 'var(--cream)', letterSpacing: '-0.02em' }}>
+            Fim das filas.<br />
+            <span style={{ color: 'var(--grain)', fontStyle: 'italic' }}>Começa o fluxo.</span>
+          </motion.h1>
+
+          <motion.p {...fade(0.25)} className="text-lg max-w-xl mx-auto mb-10 leading-relaxed"
+                    style={{ color: 'var(--bark)' }}>
+            FluxoGrão traz o agendamento por janela horária dos grandes portos direto
+            para cooperativas e silos do interior do Brasil.
+          </motion.p>
+
+          <motion.div {...fade(0.35)} className="flex gap-4 justify-center flex-wrap">
+            <button onClick={() => navigate('/cadastro')}
+                    className="px-8 py-3.5 rounded-full font-bold text-base transition-all"
+                    style={{ background: 'var(--grain)', color: 'var(--earth)' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--harvest)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--grain)'; e.currentTarget.style.transform = 'translateY(0)' }}>
               Começar gratuitamente
             </button>
-            <button
-              onClick={() => navigate('/login?tab=motorista')}
-              className="px-8 py-3.5 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              🚛 Sou motorista
+            <button onClick={() => navigate('/login?tab=motorista')}
+                    className="px-8 py-3.5 rounded-full font-semibold text-base transition-all"
+                    style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'var(--cream)', background: 'rgba(255,255,255,0.04)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}>
+              Sou motorista →
             </button>
-          </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Scroll hint */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
+                    className="absolute bottom-10 flex flex-col items-center gap-2"
+                    style={{ color: 'var(--bark)' }}>
+          <span className="text-xs tracking-widest uppercase">Rolar</span>
+          <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.4 }}
+                      className="w-px h-8 rounded-full" style={{ background: 'var(--bark)' }} />
+        </motion.div>
+      </section>
+
+      {/* ── STATS ── */}
+      <section className="py-16 px-6" style={{ background: 'var(--field)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-px"
+             style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 16, overflow: 'hidden' }}>
+          {STATS.map((s, i) => (
+            <motion.div key={i} {...fade(0.1 * i)} className="px-8 py-10"
+                        style={{ background: 'var(--field)' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '3rem', color: 'var(--grain)', lineHeight: 1 }}>{s.value}</div>
+              <div className="mt-2 text-sm leading-snug" style={{ color: 'var(--bark)' }}>{s.label}</div>
+            </motion.div>
+          ))}
         </div>
       </section>
 
-      {/* Problema */}
-      <section className="py-20 px-6 bg-white">
+      {/* ── HOW IT WORKS ── */}
+      <section className="py-24 px-6" style={{ background: 'var(--earth)' }}>
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">O problema é real</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { icon: '⛽', num: '+20%', label: 'de custo de frete no pico da safra por falta de organização' },
-              { icon: '⏱️', num: '8h+', label: 'de espera média dos caminhões em filas em períodos de pico' },
-              { icon: '🌱', num: '1,2 bi L', label: 'de diesel extras gastos em 2025 por rodovias e logística ineficiente' },
-            ].map(card => (
-              <div key={card.num} className="text-center p-8 rounded-2xl bg-red-50 border border-red-100">
-                <div className="text-4xl mb-3">{card.icon}</div>
-                <div className="text-4xl font-bold text-red-600 mb-2">{card.num}</div>
-                <p className="text-gray-600 text-sm leading-relaxed">{card.label}</p>
-              </div>
+          <motion.h2 {...fade()} className="text-center mb-16"
+                     style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem,5vw,3.5rem)',
+                              color: 'var(--cream)', letterSpacing: '-0.02em' }}>
+            Como <span style={{ color: 'var(--grain)', fontStyle: 'italic' }}>funciona</span>
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {HOW.map((item, i) => (
+              <motion.div key={i} {...fade(0.1 * i)}
+                          className="p-8 rounded-2xl"
+                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div className="mb-4" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--grain)' }}>{item.n}</div>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--cream)' }}>{item.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--bark)' }}>{item.body}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Como funciona */}
-      <section className="py-20 px-6 bg-green-50">
+      {/* ── PLANOS ── */}
+      <section className="py-24 px-6" style={{ background: 'var(--field)' }}>
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Como funciona</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[
-              { step: '1', icon: '🏢', title: 'Cadastre suas docas', desc: 'Configure capacidade e horários de cada ponto de descarga' },
-              { step: '2', icon: '📅', title: 'Motorista agenda', desc: 'Escolhe doca, data e horário disponível pelo celular em segundos' },
-              { step: '3', icon: '📲', title: 'QR Code na guarita', desc: 'Operador bipa o QR e o sistema direciona o caminhão' },
-              { step: '4', icon: '📊', title: 'Analytics em tempo real', desc: 'Painel com fluxo por hora, previsões e relatório de CO₂' },
-            ].map(item => (
-              <div key={item.step} className="text-center">
-                <div className="w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                  {item.step}
-                </div>
-                <div className="text-3xl mb-3">{item.icon}</div>
-                <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Planos */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Planos simples e transparentes</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <motion.h2 {...fade()} className="text-center mb-4"
+                     style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem,5vw,3.5rem)',
+                              color: 'var(--cream)', letterSpacing: '-0.02em' }}>
+            Planos simples
+          </motion.h2>
+          <p className="text-center mb-16 text-sm" style={{ color: 'var(--bark)' }}>
+            Comece grátis, escale quando precisar.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {PLANOS.map((plano, i) => (
-              <div
-                key={plano.id}
-                className={`rounded-2xl p-8 border-2 ${
-                  i === 1
-                    ? 'border-green-500 shadow-xl shadow-green-100'
-                    : 'border-gray-100'
-                }`}
-              >
+              <motion.div key={plano.id} {...fade(0.1 * i)}
+                          className="p-8 rounded-2xl flex flex-col"
+                          style={{
+                            background: i === 1 ? 'var(--canopy)' : 'rgba(255,255,255,0.03)',
+                            border: i === 1 ? '1px solid var(--blade)' : '1px solid rgba(255,255,255,0.07)',
+                          }}>
                 {i === 1 && (
-                  <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full mb-4">
-                    Mais popular
+                  <span className="self-start text-xs font-bold px-2.5 py-1 rounded-full mb-4"
+                        style={{ background: 'var(--grain)', color: 'var(--earth)' }}>
+                    Popular
                   </span>
                 )}
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{plano.nome}</h3>
-                <div className="mb-4">
-                  {plano.precoMensal === 0 ? (
-                    <span className="text-4xl font-bold text-gray-900">Grátis</span>
-                  ) : plano.precoMensal === -1 ? (
-                    <span className="text-2xl font-bold text-gray-900">Sob consulta</span>
-                  ) : (
-                    <span className="text-4xl font-bold text-gray-900">
-                      R$ {plano.precoMensal.toLocaleString('pt-BR')}
-                      <span className="text-base font-normal text-gray-400">/mês</span>
-                    </span>
-                  )}
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', color: 'var(--cream)' }}>{plano.nome}</div>
+                <div className="my-4" style={{ fontFamily: 'var(--font-display)', fontSize: '2.75rem', color: 'var(--grain)', lineHeight: 1 }}>
+                  {plano.precoMensal === 0 ? 'Grátis' : plano.precoMensal === -1 ? 'Consulta' : `R$ ${plano.precoMensal.toLocaleString('pt-BR')}`}
+                  {plano.precoMensal > 0 && <span className="text-sm font-normal" style={{ color: 'var(--bark)' }}>/mês</span>}
                 </div>
-                <p className="text-gray-500 text-sm mb-6">{plano.descricao}</p>
-                <button
-                  onClick={() => navigate('/cadastro')}
-                  className={`w-full py-3 rounded-xl font-semibold transition-colors ${
-                    i === 1
-                      ? 'bg-green-600 text-white hover:bg-green-700'
-                      : 'border border-gray-200 text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
+                <p className="text-sm mb-8 flex-1 leading-relaxed" style={{ color: 'var(--bark)' }}>{plano.descricao}</p>
+                <button onClick={() => navigate('/cadastro')}
+                        className="w-full py-3 rounded-xl font-semibold text-sm transition-all"
+                        style={{ background: i === 1 ? 'var(--grain)' : 'rgba(255,255,255,0.07)',
+                                 color: i === 1 ? 'var(--earth)' : 'var(--cream)' }}>
                   {plano.precoMensal === -1 ? 'Falar com vendas' : 'Começar agora'}
                 </button>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 px-6 border-t border-gray-100 text-center text-gray-400 text-sm">
-        <strong className="text-gray-600">FluxoGrão</strong> — Organizando o fluxo, acelerando o agro.
+      {/* ── FOOTER ── */}
+      <footer className="py-10 px-6 text-center text-xs" style={{ background: 'var(--earth)', color: 'var(--bark)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', color: 'var(--cream)' }}>FluxoGrão</span>
+        <br /><br />
+        Organizando o fluxo, acelerando o agro.
         <br />Code Race 2026 · Antonio Meneghetti Faculdade
       </footer>
     </div>
