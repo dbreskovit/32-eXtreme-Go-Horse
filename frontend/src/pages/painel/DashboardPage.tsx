@@ -1,116 +1,153 @@
-import { useState } from 'react'
+import { motion } from 'motion/react'
 import { DASHBOARD_HOJE, FLUXO_HORA, EMPRESA } from '../../mocks/data'
 import { StatusBadge } from '../../components/StatusBadge'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer,
 } from 'recharts'
 
 const CARDS = [
-  { key: 'totalAgendados', label: 'Agendados hoje', icon: '📅', color: 'bg-blue-50 text-blue-600' },
-  { key: 'emPatio',        label: 'Em pátio',        icon: '🚛', color: 'bg-yellow-50 text-yellow-600' },
-  { key: 'descarregando',  label: 'Descarregando',   icon: '⬇️', color: 'bg-orange-50 text-orange-600' },
-  { key: 'concluidos',     label: 'Concluídos',      icon: '✅', color: 'bg-green-50 text-green-600' },
+  { key: 'totalAgendados', label: 'Agendados', icon: '📅', accent: '#3b82f6' },
+  { key: 'emPatio',        label: 'Em pátio',  icon: '🚛', accent: '#f59e0b' },
+  { key: 'descarregando',  label: 'Descarreg.', icon: '⬇',  accent: '#ea580c' },
+  { key: 'concluidos',     label: 'Concluídos', icon: '✓',  accent: '#22c55e' },
 ]
+
+const stagger = (i: number) => ({
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: i * 0.07 },
+})
 
 export function DashboardPage() {
   const dash = DASHBOARD_HOJE
-  const [dataGrafico] = useState(FLUXO_HORA)
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto" style={{ fontFamily: 'var(--font-sans)' }}>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <motion.div {...stagger(0)} className="flex items-start justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <h1 className="font-bold" style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', color: 'var(--earth)', letterSpacing: '-0.02em' }}>
+            Dashboard
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--bark)' }}>
             {EMPRESA.razaoSocial} · {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-green-50 text-green-700 text-sm px-3 py-1.5 rounded-full">
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+             style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.2)' }}>
+          <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
           Ao vivo
         </div>
-      </div>
+      </motion.div>
 
-      {/* Cards de resumo */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {CARDS.map(card => (
-          <div key={card.key} className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-            <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl text-xl ${card.color} mb-3`}>
-              {card.icon}
-            </div>
-            <div className="text-3xl font-bold text-gray-900">
+        {CARDS.map((card, i) => (
+          <motion.div key={card.key} {...stagger(i + 1)}
+                      className="rounded-2xl p-5 relative overflow-hidden"
+                      style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+            <div className="absolute top-0 right-0 w-16 h-16 rounded-full blur-2xl opacity-20 translate-x-4 -translate-y-4"
+                 style={{ background: card.accent }} />
+            <div className="text-2xl mb-3">{card.icon}</div>
+            <div className="text-3xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--earth)' }}>
               {dash[card.key as keyof typeof dash] as number}
             </div>
-            <div className="text-sm text-gray-500 mt-0.5">{card.label}</div>
-          </div>
+            <div className="text-xs font-medium mt-1" style={{ color: 'var(--bark)' }}>{card.label}</div>
+          </motion.div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Gráfico */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-          <h2 className="font-semibold text-gray-900 mb-4">Fluxo de chegadas por hora</h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={dataGrafico} barSize={18}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="hora" tick={{ fontSize: 11, fill: '#9ca3af' }} />
-              <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} />
+        <motion.div {...stagger(5)} className="lg:col-span-2 rounded-2xl p-5"
+                    style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-semibold text-sm" style={{ color: 'var(--earth)' }}>Fluxo de chegadas por hora</h2>
+            <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--parchment)', color: 'var(--bark)' }}>hoje</span>
+          </div>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={FLUXO_HORA} margin={{ left: -20, right: 4 }}>
+              <defs>
+                <linearGradient id="gAgend" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="gConc" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0F2918" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#0F2918" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
+              <XAxis dataKey="hora" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
+                contentStyle={{ fontSize: 12, borderRadius: 10, border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+                cursor={{ stroke: 'rgba(0,0,0,0.08)' }}
               />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="total" name="Agendados" fill="#86efac" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="concluidos" name="Concluídos" fill="#16a34a" radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Area type="monotone" dataKey="total" name="Agendados" stroke="#22c55e" strokeWidth={2} fill="url(#gAgend)" dot={false} />
+              <Area type="monotone" dataKey="concluidos" name="Concluídos" stroke="#0F2918" strokeWidth={2} fill="url(#gConc)" dot={false} />
+            </AreaChart>
           </ResponsiveContainer>
-        </div>
+        </motion.div>
 
         {/* Próximas chegadas */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-          <h2 className="font-semibold text-gray-900 mb-4">Próximas chegadas</h2>
+        <motion.div {...stagger(6)} className="rounded-2xl p-5"
+                    style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+          <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--earth)' }}>Próximas chegadas</h2>
           <div className="space-y-3">
             {dash.proximasChegadas.map(ag => (
-              <div key={ag.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                <div className="text-2xl">🚛</div>
+              <div key={ag.id} className="flex items-center gap-3 p-3 rounded-xl"
+                   style={{ background: 'var(--parchment)' }}>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm shrink-0"
+                     style={{ background: 'var(--earth)', color: 'var(--harvest)' }}>
+                  {ag.motorista.nome.charAt(0)}
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900 truncate">{ag.motorista.nome}</div>
-                  <div className="text-xs text-gray-500 truncate">{ag.veiculo.placa} · {ag.doca.nome}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    {format(new Date(ag.dataHoraAgendada), 'HH:mm')} · {ag.volumeTon}t
+                  <div className="text-xs font-semibold truncate" style={{ color: 'var(--earth)' }}>{ag.motorista.nome}</div>
+                  <div className="text-xs truncate" style={{ color: 'var(--bark)' }}>
+                    {ag.veiculo.placa} · {format(new Date(ag.dataHoraAgendada), 'HH:mm')}
                   </div>
                 </div>
                 <StatusBadge status={ag.status} />
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Calculadora sustentável */}
-      <div className="mt-6 bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-5 text-white shadow-sm">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="text-3xl">🌱</div>
+      {/* Sustentabilidade */}
+      <motion.div {...stagger(7)} className="mt-6 rounded-2xl p-6 relative overflow-hidden"
+                  style={{ background: 'var(--earth)' }}>
+        <div className="absolute inset-0 pointer-events-none"
+             style={{ background: 'radial-gradient(ellipse at 80% 50%, rgba(245,158,11,0.15) 0%, transparent 60%)' }} />
+        <div className="relative flex items-center gap-6 flex-wrap">
           <div>
-            <div className="font-semibold text-lg">Impacto ambiental de hoje</div>
-            <div className="text-green-200 text-sm">
-              {dash.concluidos} descargas organizadas evitaram tempo ocioso nas filas
+            <div className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: 'var(--bark)' }}>
+              Impacto ambiental hoje
+            </div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--cream)' }}>
+              {dash.concluidos} descargas organizadas
             </div>
           </div>
           <div className="flex gap-8 ml-auto flex-wrap">
-            <div className="text-center">
-              <div className="text-2xl font-bold">{(dash.concluidos * 42 * 0.00268).toFixed(1)}t</div>
-              <div className="text-green-200 text-xs">CO₂ não emitido</div>
+            <div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', color: 'var(--grain)' }}>
+                {(dash.concluidos * 42 * 0.00268).toFixed(1)}t
+              </div>
+              <div className="text-xs" style={{ color: 'var(--bark)' }}>CO₂ não emitido</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">~{dash.concluidos * 3}h</div>
-              <div className="text-green-200 text-xs">de fila eliminadas</div>
+            <div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', color: 'var(--grain)' }}>
+                ~{dash.concluidos * 3}h
+              </div>
+              <div className="text-xs" style={{ color: 'var(--bark)' }}>de fila eliminadas</div>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
