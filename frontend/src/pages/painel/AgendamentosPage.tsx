@@ -1,11 +1,16 @@
 import { useState } from 'react'
+import { motion } from 'motion/react'
 import { AGENDAMENTOS } from '../../mocks/data'
 import { StatusBadge } from '../../components/StatusBadge'
 import { format } from 'date-fns'
 import type { Agendamento, StatusAgendamento } from '../../types'
 
-const STATUS_OPTIONS: { value: string; label: string }[] = [
-  { value: '', label: 'Todos os status' },
+const PROX: Partial<Record<StatusAgendamento, string>> = {
+  agendado: 'Check-in', em_patio: 'Descarregar', descarregando: 'Finalizar',
+}
+
+const STATUS_OPTS = [
+  { value: '', label: 'Todos' },
   { value: 'agendado', label: 'Agendado' },
   { value: 'em_patio', label: 'Em Pátio' },
   { value: 'descarregando', label: 'Descarregando' },
@@ -13,101 +18,103 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: 'cancelado', label: 'Cancelado' },
 ]
 
-const PROXIMA_ACAO: Partial<Record<StatusAgendamento, string>> = {
-  agendado: 'Check-in',
-  em_patio: 'Iniciar descarga',
-  descarregando: 'Finalizar',
-}
-
 export function AgendamentosPage() {
-  const [filtroStatus, setFiltroStatus] = useState('')
+  const [filtro, setFiltro] = useState('')
   const [agendamentos, setAgendamentos] = useState(AGENDAMENTOS)
 
-  const filtrados = filtroStatus
-    ? agendamentos.filter(a => a.status === filtroStatus)
-    : agendamentos
+  const lista = filtro ? agendamentos.filter(a => a.status === filtro) : agendamentos
 
-  function avancarStatus(ag: Agendamento) {
-    const proximo: Partial<Record<StatusAgendamento, StatusAgendamento>> = {
-      agendado: 'em_patio',
-      em_patio: 'descarregando',
-      descarregando: 'concluido',
+  function avancar(ag: Agendamento) {
+    const m: Partial<Record<StatusAgendamento, StatusAgendamento>> = {
+      agendado: 'em_patio', em_patio: 'descarregando', descarregando: 'concluido',
     }
-    const novoStatus = proximo[ag.status]
-    if (!novoStatus) return
-    setAgendamentos(prev =>
-      prev.map(a => a.id === ag.id ? { ...a, status: novoStatus } : a)
-    )
+    const s = m[ag.status]
+    if (s) setAgendamentos(prev => prev.map(a => a.id === ag.id ? { ...a, status: s } : a))
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+    <div className="p-6 max-w-6xl mx-auto" style={{ fontFamily: 'var(--font-sans)' }}>
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+                  className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Agendamentos</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{filtrados.length} registros</p>
+          <h1 className="font-bold" style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', color: 'var(--earth)', letterSpacing: '-0.02em' }}>
+            Agendamentos
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--bark)' }}>{lista.length} registros</p>
         </div>
-        <select
-          value={filtroStatus}
-          onChange={e => setFiltroStatus(e.target.value)}
-          className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-        >
-          {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-      </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Filter chips */}
+        <div className="flex gap-2 flex-wrap">
+          {STATUS_OPTS.map(o => (
+            <button key={o.value} onClick={() => setFiltro(o.value)}
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                    style={{
+                      background: filtro === o.value ? 'var(--earth)' : 'var(--parchment)',
+                      color: filtro === o.value ? 'var(--cream)' : 'var(--bark)',
+                    }}>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.1 }}
+                  className="rounded-2xl overflow-hidden"
+                  style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Código</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Motorista</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Placa</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Doca</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Horário</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Volume</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ação</th>
+            <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+              {['Código', 'Motorista', 'Placa', 'Doca', 'Horário', 'Volume', 'Status', ''].map(h => (
+                <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider"
+                    style={{ color: 'var(--bark)', background: 'var(--parchment)' }}>
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
-            {filtrados.map(ag => (
-              <tr key={ag.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-3 font-mono font-medium text-gray-900">{ag.codigo}</td>
-                <td className="px-4 py-3">
-                  <div className="font-medium text-gray-900">{ag.motorista.nome}</div>
-                  <div className="text-xs text-gray-400">Score: {ag.motorista.scorePontualidade}%</div>
+          <tbody>
+            {lista.map((ag, i) => (
+              <motion.tr key={ag.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}
+                         style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}
+                         onMouseEnter={e => (e.currentTarget.style.background = 'var(--parchment)')}
+                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                <td className="px-4 py-3" style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '0.8rem', color: 'var(--earth)' }}>
+                  {ag.codigo}
                 </td>
-                <td className="px-4 py-3 text-gray-600">{ag.veiculo.placa}</td>
-                <td className="px-4 py-3 text-gray-600">{ag.doca.nome}</td>
-                <td className="px-4 py-3 text-gray-600">
+                <td className="px-4 py-3">
+                  <div className="font-medium text-xs" style={{ color: 'var(--earth)' }}>{ag.motorista.nome}</div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--bark)' }}>Score {ag.motorista.scorePontualidade}%</div>
+                </td>
+                <td className="px-4 py-3 text-xs" style={{ color: 'var(--bark)' }}>{ag.veiculo.placa}</td>
+                <td className="px-4 py-3 text-xs" style={{ color: 'var(--bark)' }}>{ag.doca.nome}</td>
+                <td className="px-4 py-3 text-xs" style={{ fontFamily: 'var(--font-mono)', color: 'var(--bark)' }}>
                   {format(new Date(ag.dataHoraAgendada), 'HH:mm')}
                 </td>
-                <td className="px-4 py-3 text-gray-600">{ag.volumeTon}t</td>
+                <td className="px-4 py-3 text-xs font-medium" style={{ color: 'var(--earth)' }}>{ag.volumeTon}t</td>
                 <td className="px-4 py-3"><StatusBadge status={ag.status} /></td>
                 <td className="px-4 py-3">
-                  {PROXIMA_ACAO[ag.status] && (
-                    <button
-                      onClick={() => avancarStatus(ag)}
-                      className="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-                    >
-                      {PROXIMA_ACAO[ag.status]}
+                  {PROX[ag.status] && (
+                    <button onClick={() => avancar(ag)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                            style={{ background: 'var(--parchment)', color: 'var(--earth)' }}
+                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--mist)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'var(--parchment)')}>
+                      {PROX[ag.status]}
                     </button>
                   )}
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
 
-        {filtrados.length === 0 && (
-          <div className="text-center py-16 text-gray-400">
-            <div className="text-4xl mb-3">📋</div>
-            <p className="font-medium">Nenhum agendamento encontrado</p>
-            <p className="text-sm mt-1">Tente mudar o filtro de status</p>
+        {lista.length === 0 && (
+          <div className="text-center py-16" style={{ color: 'var(--mist)' }}>
+            <div className="text-5xl mb-3 opacity-40">≡</div>
+            <p className="text-sm font-medium">Nenhum agendamento encontrado</p>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   )
 }
