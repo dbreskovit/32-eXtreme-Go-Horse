@@ -1,152 +1,127 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'motion/react'
 import { PLANOS } from '../../mocks/data'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Plano } from '../../types'
 
 export function RegisterPage() {
   const [step, setStep] = useState(1)
-  const [planoSelecionado, setPlanoSelecionado] = useState<Plano>(PLANOS[0])
+  const [plano, setPlano] = useState<Plano>(PLANOS[0])
   const [loading, setLoading] = useState(false)
   const { loginEmpresa } = useAuth()
   const navigate = useNavigate()
 
-  const [form, setForm] = useState({
-    razaoSocial: '', cnpj: '', email: '', senha: '', telefone: '',
-  })
+  const [form, setForm] = useState({ razaoSocial: '', cnpj: '', email: '', senha: '' })
+  const set = (k: keyof typeof form) => (v: string) => setForm(f => ({ ...f, [k]: v }))
 
-  async function handleFinalizar() {
+  async function finalizar() {
     setLoading(true)
     await loginEmpresa(form.email, form.senha)
     navigate('/painel/dashboard')
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-amber-50 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-xl">
-        <div className="text-center mb-8">
-          <span className="text-4xl">🌾</span>
-          <h1 className="text-2xl font-bold text-gray-900 mt-2">Criar conta</h1>
-        </div>
+    <div className="grain min-h-screen flex items-center justify-center px-4 py-12"
+         style={{ background: 'var(--earth)' }}>
+      <div className="w-full max-w-md">
+        <button onClick={() => navigate('/')} className="mb-8 text-sm hover:underline" style={{ color: 'var(--bark)' }}>
+          ← Voltar
+        </button>
 
-        {/* Steps */}
-        <div className="flex items-center gap-4 mb-8 justify-center">
+        <h1 className="mb-2 font-bold" style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', color: 'var(--cream)', letterSpacing: '-0.02em' }}>
+          Criar conta
+        </h1>
+        <p className="text-sm mb-8" style={{ color: 'var(--bark)' }}>Comece grátis, sem cartão de crédito.</p>
+
+        {/* Step indicator */}
+        <div className="flex items-center gap-3 mb-8">
           {[1, 2].map(s => (
             <div key={s} className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
-                s <= step ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-400'
-              }`}>
-                {s}
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all"
+                   style={{
+                     background: s <= step ? 'var(--grain)' : 'rgba(255,255,255,0.08)',
+                     color: s <= step ? 'var(--earth)' : 'var(--bark)',
+                   }}>
+                {s < step ? '✓' : s}
               </div>
-              <span className={`text-sm ${s <= step ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
-                {s === 1 ? 'Dados da empresa' : 'Escolha o plano'}
+              <span className="text-xs" style={{ color: s <= step ? 'var(--cream)' : 'var(--bark)' }}>
+                {s === 1 ? 'Dados da empresa' : 'Plano'}
               </span>
-              {s < 2 && <div className="w-12 h-px bg-gray-200 ml-2" />}
+              {s < 2 && <div className="w-8 h-px mx-1" style={{ background: 'rgba(255,255,255,0.1)' }} />}
             </div>
           ))}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl shadow-green-100 p-8">
+        <AnimatePresence mode="wait">
           {step === 1 && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Razão Social</label>
-                <input
-                  value={form.razaoSocial} onChange={e => setForm({ ...form, razaoSocial: e.target.value })}
-                  placeholder="Cooperativa Tritícola Ltda."
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">CNPJ</label>
-                <input
-                  value={form.cnpj} onChange={e => setForm({ ...form, cnpj: e.target.value })}
-                  placeholder="00.000.000/0001-00"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
-                <input
-                  type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                  placeholder="operacoes@empresa.com.br"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-                <input
-                  type="password" value={form.senha} onChange={e => setForm({ ...form, senha: e.target.value })}
-                  placeholder="Mínimo 8 caracteres"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-              <button
-                onClick={() => setStep(2)}
-                className="w-full py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors mt-2"
-              >
+            <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3 }} className="space-y-4">
+              <DarkField label="Razão Social" value={form.razaoSocial} onChange={set('razaoSocial')} placeholder="Cooperativa Tritícola Ltda." />
+              <DarkField label="CNPJ" value={form.cnpj} onChange={set('cnpj')} placeholder="00.000.000/0001-00" />
+              <DarkField label="E-mail" type="email" value={form.email} onChange={set('email')} placeholder="operacoes@empresa.com.br" />
+              <DarkField label="Senha" type="password" value={form.senha} onChange={set('senha')} placeholder="Mínimo 8 caracteres" />
+              <button onClick={() => setStep(2)}
+                      className="w-full py-3 rounded-xl font-bold text-sm mt-2"
+                      style={{ background: 'var(--grain)', color: 'var(--earth)' }}>
                 Próximo →
               </button>
-            </div>
+            </motion.div>
           )}
 
           {step === 2 && (
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Escolha seu plano</h2>
-              <div className="space-y-3 mb-6">
-                {PLANOS.map(plano => (
-                  <div
-                    key={plano.id}
-                    onClick={() => setPlanoSelecionado(plano)}
-                    className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${
-                      planoSelecionado.id === plano.id
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-100 hover:border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="font-semibold text-gray-900">{plano.nome}</span>
-                        <p className="text-xs text-gray-500 mt-0.5">{plano.descricao}</p>
-                      </div>
-                      <div className="text-right shrink-0 ml-4">
-                        {plano.precoMensal === 0 ? (
-                          <span className="font-bold text-green-600">Grátis</span>
-                        ) : plano.precoMensal === -1 ? (
-                          <span className="font-bold text-gray-700">Consulta</span>
-                        ) : (
-                          <span className="font-bold text-gray-900">R$ {plano.precoMensal}/mês</span>
-                        )}
-                      </div>
+            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3 }} className="space-y-3">
+              {PLANOS.map((p, i) => (
+                <div key={p.id} onClick={() => setPlano(p)}
+                     className="cursor-pointer p-5 rounded-xl transition-all"
+                     style={{
+                       background: plano.id === p.id ? 'var(--canopy)' : 'rgba(255,255,255,0.03)',
+                       border: plano.id === p.id ? '1px solid var(--blade)' : '1px solid rgba(255,255,255,0.07)',
+                     }}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold text-sm" style={{ color: 'var(--cream)' }}>{p.nome}</div>
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--bark)' }}>{p.descricao}</div>
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--grain)', whiteSpace: 'nowrap', marginLeft: 16 }}>
+                      {p.precoMensal === 0 ? 'Grátis' : p.precoMensal === -1 ? 'Consulta' : `R$ ${p.precoMensal}/mês`}
                     </div>
                   </div>
-                ))}
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setStep(1)}
-                  className="flex-1 py-3 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
-                >
+                </div>
+              ))}
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setStep(1)}
+                        className="flex-1 py-3 rounded-xl font-semibold text-sm"
+                        style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'var(--cream)' }}>
                   ← Voltar
                 </button>
-                <button
-                  onClick={handleFinalizar} disabled={loading}
-                  className="flex-1 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 disabled:opacity-60 transition-colors"
-                >
-                  {loading ? 'Criando conta...' : 'Criar conta'}
+                <button onClick={finalizar} disabled={loading}
+                        className="flex-1 py-3 rounded-xl font-bold text-sm disabled:opacity-50"
+                        style={{ background: 'var(--grain)', color: 'var(--earth)' }}>
+                  {loading ? 'Criando...' : 'Criar conta'}
                 </button>
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
-
-        <p className="text-center text-sm text-gray-400 mt-6">
-          Já tem conta?{' '}
-          <button onClick={() => navigate('/login')} className="text-green-600 font-medium hover:underline">
-            Entrar
-          </button>
-        </p>
+        </AnimatePresence>
       </div>
+    </div>
+  )
+}
+
+function DarkField({ label, type = 'text', value, onChange, placeholder }: {
+  label: string; type?: string; value: string; onChange: (v: string) => void; placeholder?: string
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--bark)' }}>{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} required
+             className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                      color: 'var(--cream)', fontFamily: 'var(--font-sans)' }}
+             onFocus={e => (e.currentTarget.style.borderColor = 'var(--grain)')}
+             onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')} />
     </div>
   )
 }
