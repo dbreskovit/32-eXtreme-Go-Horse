@@ -1,16 +1,28 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
-import type { UsuarioEmpresa, Motorista, TipoUsuario } from '../types'
-import { USUARIO_LOGADO, MOTORISTA_LOGADO } from '../mocks/data'
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import type { TipoUsuario } from '../types'
+import { loginEmpresa as apiLoginEmpresa, loginMotorista as apiLoginMotorista, registerEmpresa as apiRegisterEmpresa, getMe, type RegisterEmpresaDto } from '../lib/auth'
+import { clearToken, getSavedToken, getSavedTipo } from '../lib/api'
+
+interface UsuarioLogado {
+  id: string
+  nome: string
+  email?: string
+  papel?: string
+  empresaId?: string
+  telefone?: string
+  scorePontualidade?: number
+}
 
 interface AuthState {
   tipo: TipoUsuario | null
-  usuario: UsuarioEmpresa | null
-  motorista: Motorista | null
+  usuario: UsuarioLogado | null
+  hydrated: boolean
 }
 
 interface AuthContextType extends AuthState {
   loginEmpresa: (email: string, senha: string) => Promise<void>
   loginMotorista: (telefone: string, placa: string) => Promise<void>
+  registerEmpresa: (dto: RegisterEmpresaDto) => Promise<void>
   logout: () => void
   isAuthenticated: boolean
 }
@@ -21,23 +33,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
     tipo: null,
     usuario: null,
-    motorista: null,
+    hydrated: false,
   })
 
-  async function loginEmpresa(_email: string, _senha: string) {
-    // Mock: aceita qualquer credencial
-    await new Promise(r => setTimeout(r, 600))
-    setState({ tipo: 'empresa', usuario: USUARIO_LOGADO, motorista: null })
+  // Hidrata sessão ao montar (token salvo no localStorage)
+  useEffect(() => {
+    const token = getSavedToken()
+    const tipo = getSavedTipo()
+    if (!token || !tipo) {
+      setState(s => ({ ...s, hydrated: true }))
+      return
+    }
+    getMe()
+      .then(me => setState({ tipo, usuario: me, hydrated: true }))
+      .catch(() => {
+        clearToken()
+        setState({ tipo: null, usuario: null, hydrated: true })
+      })
+  }, [])
+
+  async function loginEmpresa(email: string, senha: string) {
+    await apiLoginEmpresa({ email, senha })
+    const me = await getMe()
+    setState({ tipo: 'empresa', usuario: me, hydrated: true })
   }
 
-  async function loginMotorista(_telefone: string, _placa: string) {
-    // Mock: aceita qualquer credencial
-    await new Promise(r => setTimeout(r, 600))
-    setState({ tipo: 'motorista', usuario: null, motorista: MOTORISTA_LOGADO })
+  async function loginMotorista(telefone: string, placa: string) {
+    await apiLoginMotorista({ telefone, placa })
+    const me = await getMe()
+    setState({ tipo: 'motorista', usuario: me, hydrated: true })
+  }
+
+  async function registerEmpresa(dto: RegisterEmpresaDto) {
+    await apiRegisterEmpresa(dto)
+    const me = await getMe()
+    setState({ tipo: 'empresa', usuario: me, hydrated: true })
   }
 
   function logout() {
-    setState({ tipo: null, usuario: null, motorista: null })
+    clearToken()
+    setState({ tipo: null, usuario: null, hydrated: true })
   }
 
   return (
@@ -46,11 +81,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ...state,
         loginEmpresa,
         loginMotorista,
+        registerEmpresa,
         logout,
         isAuthenticated: state.tipo !== null,
       }}
     >
-      {children}
+      {/* Aguarda hidratação antes de renderizar para evitar flash de redirecionamento */}
+      {state.hydrated ? children : null}
     </AuthContext.Provider>
   )
 }

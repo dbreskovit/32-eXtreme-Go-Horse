@@ -5,10 +5,10 @@ import { StatusBadge } from '../../components/StatusBadge'
 import { format } from 'date-fns'
 import type { Agendamento, StatusAgendamento } from '../../types'
 
-const ACAO: Partial<Record<StatusAgendamento, { label: string; color: string }>> = {
-  agendado:      { label: 'Fazer Check-in',    color: '#22c55e' },
-  em_patio:      { label: 'Iniciar Descarga',  color: '#f59e0b' },
-  descarregando: { label: 'Finalizar Descarga', color: '#3b82f6' },
+const ACAO: Partial<Record<StatusAgendamento, { label: string; bg: string; text: string; hover: string }>> = {
+  agendado:      { label: 'Fazer Check-in',    bg: '#22c55e', text: '#fff', hover: '#15803d' },
+  em_patio:      { label: 'Iniciar Descarga',  bg: '#f59e0b', text: '#fff', hover: '#d97706' },
+  descarregando: { label: 'Finalizar Descarga', bg: '#6366f1', text: '#fff', hover: '#4f46e5' },
 }
 
 export function GuaritaPage() {
@@ -44,41 +44,47 @@ export function GuaritaPage() {
   return (
     <div className="p-6 max-w-5xl mx-auto" style={{ fontFamily: 'var(--font-sans)' }}>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <h1 className="font-bold mb-1" style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', color: 'var(--earth)', letterSpacing: '-0.02em' }}>
+        <h1 className="font-bold mb-1"
+            style={{ fontFamily: 'var(--font-display)', fontSize: '1.875rem', color: 'var(--slate-900)', letterSpacing: '-0.025em' }}>
           Guarita
         </h1>
-        <p className="text-sm mb-6" style={{ color: 'var(--bark)' }}>Busque por código QR ou placa do veículo</p>
+        <p className="text-sm mb-6" style={{ color: 'var(--slate-500)' }}>Busque por código QR ou placa do veículo</p>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
         {/* Busca */}
-        <div className="rounded-2xl p-6" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div className="rounded-2xl p-6"
+             style={{ background: '#fff', border: '1px solid var(--slate-200)', boxShadow: 'var(--shadow-sm)' }}>
           <form onSubmit={buscar} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold mb-2 uppercase tracking-widest" style={{ color: 'var(--bark)' }}>
+              <label className="block text-xs font-semibold mb-2 uppercase tracking-widest"
+                     style={{ color: 'var(--slate-400)' }}>
                 Código QR ou Placa
               </label>
               <input value={busca} onChange={e => setBusca(e.target.value)}
                      placeholder="FG-2847 ou ABC-1D23" autoFocus
                      className="w-full text-center tracking-widest uppercase outline-none rounded-xl px-5 py-4 transition-all"
-                     style={{ fontSize: '1.5rem', fontFamily: 'var(--font-mono)', fontWeight: 600,
-                              background: 'var(--parchment)', border: '2px solid transparent', color: 'var(--earth)' }}
-                     onFocus={e => (e.currentTarget.style.borderColor = 'var(--grain)')}
-                     onBlur={e => (e.currentTarget.style.borderColor = 'transparent')} />
+                     style={{
+                       fontSize: '1.5rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                       background: 'var(--slate-50)', border: '2px solid var(--slate-200)', color: 'var(--slate-900)',
+                     }}
+                     onFocus={e => (e.currentTarget.style.borderColor = 'var(--green-500)')}
+                     onBlur={e => (e.currentTarget.style.borderColor = 'var(--slate-200)')} />
             </div>
             <button type="submit"
                     className="w-full py-3.5 rounded-xl font-bold text-sm transition-all"
-                    style={{ background: 'var(--earth)', color: 'var(--cream)' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--canopy)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'var(--earth)')}>
+                    style={{ background: 'var(--slate-900)', color: '#fff' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--slate-700)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'var(--slate-900)')}>
               Buscar
             </button>
           </form>
 
           {erro && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                      className="mt-4 text-sm text-center py-3 rounded-xl"
-                      style={{ background: 'rgba(239,68,68,0.08)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.15)' }}>
+                      className="mt-4 text-sm text-center py-3 rounded-xl font-medium"
+                      style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
               {erro}
             </motion.p>
           )}
@@ -87,9 +93,10 @@ export function GuaritaPage() {
             {encontrado && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
                           className="mt-5 space-y-4">
-                <div className="p-4 rounded-xl" style={{ background: 'var(--parchment)' }}>
+                <div className="p-4 rounded-xl"
+                     style={{ background: 'var(--slate-50)', border: '1px solid var(--slate-200)' }}>
                   <div className="flex items-center justify-between mb-3">
-                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '1.1rem', color: 'var(--earth)' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '1.15rem', color: 'var(--slate-900)' }}>
                       {encontrado.codigo}
                     </span>
                     <StatusBadge status={encontrado.status} />
@@ -104,8 +111,8 @@ export function GuaritaPage() {
                       ['Volume', `${encontrado.volumeTon}t`],
                     ].map(([k, v]) => (
                       <div key={k}>
-                        <div style={{ color: 'var(--bark)' }}>{k}</div>
-                        <div className="font-semibold mt-0.5" style={{ color: 'var(--earth)' }}>{v}</div>
+                        <div style={{ color: 'var(--slate-400)', marginBottom: 2 }}>{k}</div>
+                        <div className="font-semibold" style={{ color: 'var(--slate-800)', fontFamily: k === 'Placa' ? 'var(--font-mono)' : undefined }}>{v}</div>
                       </div>
                     ))}
                   </div>
@@ -114,7 +121,7 @@ export function GuaritaPage() {
                 {ACAO[encontrado.status] && (
                   <button onClick={avancar}
                           className="w-full py-4 rounded-xl font-bold text-sm transition-all"
-                          style={{ background: ACAO[encontrado.status]!.color, color: '#fff' }}
+                          style={{ background: ACAO[encontrado.status]!.bg, color: ACAO[encontrado.status]!.text, boxShadow: `0 4px 12px ${ACAO[encontrado.status]!.bg}55` }}
                           onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
                           onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
                     {ACAO[encontrado.status]!.label}
@@ -123,7 +130,7 @@ export function GuaritaPage() {
 
                 {encontrado.status === 'concluido' && (
                   <div className="text-center py-4 rounded-xl font-semibold text-sm"
-                       style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.2)' }}>
+                       style={{ background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0' }}>
                     ✓ Descarga concluída com sucesso!
                   </div>
                 )}
@@ -133,18 +140,19 @@ export function GuaritaPage() {
         </div>
 
         {/* Em pátio */}
-        <div className="rounded-2xl p-6" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="font-semibold text-sm" style={{ color: 'var(--earth)' }}>Em pátio agora</h2>
+        <div className="rounded-2xl p-6"
+             style={{ background: '#fff', border: '1px solid var(--slate-200)', boxShadow: 'var(--shadow-sm)' }}>
+          <div className="flex items-center gap-2.5 mb-4">
+            <h2 className="font-semibold text-sm" style={{ color: 'var(--slate-900)' }}>Em pátio agora</h2>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}>
+                  style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' }}>
               {emPatio.length}
             </span>
           </div>
           {emPatio.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16" style={{ color: 'var(--mist)' }}>
-              <div className="text-5xl mb-3 opacity-40">⬡</div>
-              <p className="text-sm">Pátio vazio no momento</p>
+            <div className="flex flex-col items-center justify-center py-16" style={{ color: 'var(--slate-300)' }}>
+              <div className="text-5xl mb-3">⬡</div>
+              <p className="text-sm font-medium" style={{ color: 'var(--slate-400)' }}>Pátio vazio no momento</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -152,18 +160,18 @@ export function GuaritaPage() {
                 <button key={ag.id} onClick={() => { setEncontrado(ag); setBusca(ag.codigo); setErro('') }}
                         className="w-full text-left flex items-center gap-3 p-3 rounded-xl transition-all"
                         style={{ border: '1px solid transparent' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--parchment)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--slate-50)'; e.currentTarget.style.borderColor = 'var(--slate-200)' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' }}>
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm shrink-0"
-                       style={{ background: 'var(--earth)', color: 'var(--harvest)' }}>
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                       style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}>
                     {ag.motorista.nome.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', color: 'var(--earth)' }}>{ag.codigo}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', color: 'var(--slate-800)' }}>{ag.codigo}</span>
                       <StatusBadge status={ag.status} />
                     </div>
-                    <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--bark)' }}>
+                    <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--slate-400)' }}>
                       {ag.motorista.nome} · {ag.veiculo.placa} · {format(new Date(ag.dataHoraAgendada), 'HH:mm')}
                     </div>
                   </div>

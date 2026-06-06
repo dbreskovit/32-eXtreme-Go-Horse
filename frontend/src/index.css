@@ -1,22 +1,58 @@
 @import "tailwindcss";
 
-/* ── Design Tokens ── */
+/* ── Design Tokens — Premium Light Theme ── */
 :root {
   --font-display: 'Instrument Serif', Georgia, serif;
   --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Palette */
-  --earth:   #0A1008;
-  --field:   #0F2918;
-  --canopy:  #1A4A2E;
-  --blade:   #22C55E;
-  --grain:   #F59E0B;
-  --harvest: #FCD34D;
-  --cream:   #FAFAF6;
-  --parchment: #F3F2EC;
-  --bark:    #6B7255;
-  --mist:    #D4D5CC;
+  /* ── Brand Green ── */
+  --green-950:  #052e16;
+  --green-900:  #14532d;
+  --green-700:  #15803d;
+  --green-600:  #16a34a;   /* primary action */
+  --green-500:  #22c55e;   /* accent / badge */
+  --green-100:  #dcfce7;   /* soft bg */
+  --green-50:   #f0fdf4;   /* lightest bg */
+
+  /* ── Amber / Gold ── */
+  --amber-700:  #b45309;
+  --amber-600:  #d97706;   /* highlight */
+  --amber-400:  #fbbf24;
+  --amber-100:  #fef3c7;
+  --amber-50:   #fffbeb;
+
+  /* ── Slate Neutrals ── */
+  --slate-950:  #0f172a;   /* richest dark */
+  --slate-900:  #1e293b;   /* headings */
+  --slate-700:  #334155;   /* body text */
+  --slate-500:  #64748b;   /* secondary text */
+  --slate-400:  #94a3b8;   /* placeholder / subtle */
+  --slate-200:  #e2e8f0;   /* borders */
+  --slate-100:  #f1f5f9;   /* input bg / hover */
+  --slate-50:   #f8fafc;   /* page bg */
+
+  /* ── Semantic aliases (used across components) ── */
+  --earth:      var(--slate-900);
+  --field:      var(--slate-50);
+  --canopy:     var(--green-50);
+  --blade:      var(--green-600);
+  --grain:      var(--amber-600);
+  --harvest:    var(--amber-700);
+  --cream:      #ffffff;
+  --parchment:  var(--slate-100);
+  --bark:       var(--slate-500);
+  --mist:       var(--slate-200);
+
+  /* ── Shadows ── */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md:  0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg:  0 10px 15px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.05);
+  --shadow-xl:  0 20px 25px rgba(0,0,0,0.08), 0 8px 10px rgba(0,0,0,0.04);
+
+  /* ── Focus ring ── */
+  --ring:       0 0 0 3px rgba(22,163,74,0.25);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -24,14 +60,36 @@
 body {
   margin: 0;
   font-family: var(--font-sans);
-  background: var(--cream);
-  color: var(--earth);
+  background: var(--slate-50);
+  color: var(--slate-900);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root { min-height: 100vh; }
 
-/* ── Grain texture overlay ── */
+/* ── Utility: Display / Mono fonts ── */
+.font-display { font-family: var(--font-display); }
+.font-mono    { font-family: var(--font-mono); }
+
+/* ── Focus styles ── */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+/* ── Shimmer animation ── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 50%, var(--slate-100) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+/* ── Grain texture (very subtle on light) ── */
 .grain::after {
   content: '';
   position: fixed;
@@ -39,26 +97,11 @@ body {
   pointer-events: none;
   z-index: 999;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-  opacity: 0.035;
-}
-
-/* ── Utility: Display font ── */
-.font-display { font-family: var(--font-display); }
-.font-mono    { font-family: var(--font-mono); }
-
-/* ── Shimmer animation for skeleton ── */
-@keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
-}
-.shimmer {
-  background: linear-gradient(90deg, #f0f0e8 25%, #e8e8e0 50%, #f0f0e8 75%);
-  background-size: 800px 100%;
-  animation: shimmer 1.4s infinite;
+  opacity: 0.018;
 }
 
 /* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--bark); }
+::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--slate-400); }

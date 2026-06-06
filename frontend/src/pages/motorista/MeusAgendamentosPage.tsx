@@ -1,15 +1,26 @@
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
-import { AGENDAMENTOS } from '../../mocks/data'
+import { useMeusAgendamentos } from '../../hooks/useAgendamentos'
 import { StatusBadge } from '../../components/StatusBadge'
 import { useAuth } from '../../contexts/AuthContext'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { useState } from 'react'
 
 export function MeusAgendamentosPage() {
-  const { motorista, logout } = useAuth()
+  const { usuario, logout } = useAuth()
   const navigate = useNavigate()
-  const meus = AGENDAMENTOS.filter(a => a.motorista.id === 'mot-1')
+  const { agendamentos, loading, erro, cancelar } = useMeusAgendamentos()
+  const [cancelando, setCancelando] = useState<string | null>(null)
+
+  async function handleCancelar(id: string) {
+    setCancelando(id)
+    try {
+      await cancelar(id)
+    } finally {
+      setCancelando(null)
+    }
+  }
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--earth)', fontFamily: 'var(--font-sans)' }}>
@@ -18,13 +29,17 @@ export function MeusAgendamentosPage() {
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
                style={{ background: 'var(--canopy)', color: 'var(--blade)' }}>
-            {motorista?.nome.charAt(0)}
+            {((usuario as any)?.nome ?? (usuario as any)?.telefone ?? '?').charAt(0).toUpperCase()}
           </div>
           <div>
-            <div className="text-sm font-semibold" style={{ color: 'var(--cream)' }}>{motorista?.nome}</div>
-            <div className="text-xs" style={{ color: 'var(--bark)' }}>
-              Score {motorista?.scorePontualidade}% ⭐
+            <div className="text-sm font-semibold" style={{ color: 'var(--cream)' }}>
+              {(usuario as any)?.nome ?? (usuario as any)?.telefone ?? 'Motorista'}
             </div>
+            {(usuario as any)?.scorePontualidade != null && (
+              <div className="text-xs" style={{ color: 'var(--bark)' }}>
+                Score {(usuario as any).scorePontualidade}% ⭐
+              </div>
+            )}
           </div>
         </div>
         <button onClick={logout} className="text-xs" style={{ color: 'var(--bark)' }}>Sair</button>
@@ -43,7 +58,18 @@ export function MeusAgendamentosPage() {
           </button>
         </motion.div>
 
-        {meus.length === 0 ? (
+        {erro && (
+          <div className="mb-4 p-3 rounded-xl text-sm" style={{ background: 'rgba(239,68,68,0.08)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.15)' }}>
+            {erro}
+          </div>
+        )}
+
+        {loading && agendamentos.length === 0 ? (
+          <div className="text-center py-20" style={{ color: 'var(--bark)' }}>
+            <div className="text-4xl mb-3 animate-pulse">📅</div>
+            <p className="text-sm">Carregando...</p>
+          </div>
+        ) : agendamentos.length === 0 ? (
           <div className="text-center py-20 rounded-2xl"
                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="text-5xl mb-3 opacity-30">📅</div>
@@ -52,7 +78,7 @@ export function MeusAgendamentosPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {meus.map((ag, i) => (
+            {agendamentos.map((ag, i) => (
               <motion.div key={ag.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.4, delay: i * 0.07 }}
                           className="rounded-2xl p-4"
@@ -65,10 +91,10 @@ export function MeusAgendamentosPage() {
                 </div>
                 <div className="space-y-1.5 text-xs">
                   <div className="flex items-center gap-1.5" style={{ color: 'var(--bark)' }}>
-                    <span>📍</span> {ag.unidade.nome}
+                    <span>📍</span> {ag.doca?.unidade?.nome ?? (ag as any).unidade?.nome ?? '-'}
                   </div>
                   <div className="flex items-center gap-1.5" style={{ color: 'var(--bark)' }}>
-                    <span>🏗</span> {ag.doca.nome}
+                    <span>🏗</span> {ag.doca?.nome ?? '-'}
                   </div>
                   <div className="flex items-center gap-1.5" style={{ color: 'var(--bark)' }}>
                     <span>🕐</span> {format(new Date(ag.dataHoraAgendada), "d 'de' MMM 'às' HH:mm", { locale: ptBR })}
@@ -78,11 +104,14 @@ export function MeusAgendamentosPage() {
                   </div>
                 </div>
                 {ag.status === 'agendado' && (
-                  <button className="mt-4 w-full py-2 rounded-xl text-xs font-semibold transition-all"
-                          style={{ border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5' }}
-                          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    Cancelar agendamento
+                  <button
+                    onClick={() => handleCancelar(ag.id)}
+                    disabled={cancelando === ag.id}
+                    className="mt-4 w-full py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
+                    style={{ border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    {cancelando === ag.id ? 'Cancelando...' : 'Cancelar agendamento'}
                   </button>
                 )}
               </motion.div>
