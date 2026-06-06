@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
-import { DASHBOARD_HOJE, FLUXO_HORA, EMPRESA } from '../../mocks/data'
+import { useDashboard } from '../../hooks/useDashboard'
+import { useAuth } from '../../contexts/AuthContext'
 import { StatusBadge } from '../../components/StatusBadge'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -7,12 +8,13 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+import { CalendarClock, Truck, ArrowDownToLine, CheckCircle2 } from 'lucide-react'
 
 const CARDS = [
-  { key: 'totalAgendados', label: 'Agendados',   icon: '📅', color: '#6366f1', bg: '#eef2ff', border: '#c7d2fe' },
-  { key: 'emPatio',        label: 'Em pátio',    icon: '🚛', color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
-  { key: 'descarregando',  label: 'Descarreg.',  icon: '⬇',  color: '#f97316', bg: '#fff7ed', border: '#fed7aa' },
-  { key: 'concluidos',     label: 'Concluídos',  icon: '✓',  color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
+  { key: 'totalAgendados', label: 'Agendados',   Icon: CalendarClock,   color: '#6366f1', bg: '#eef2ff', border: '#c7d2fe' },
+  { key: 'emPatio',        label: 'Em pátio',    Icon: Truck,           color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
+  { key: 'descarregando',  label: 'Descarreg.',  Icon: ArrowDownToLine, color: '#f97316', bg: '#fff7ed', border: '#fed7aa' },
+  { key: 'concluidos',     label: 'Concluídos',  Icon: CheckCircle2,    color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
 ]
 
 const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number]
@@ -23,7 +25,12 @@ const stagger = (i: number) => ({
 })
 
 export function DashboardPage() {
-  const dash = DASHBOARD_HOJE
+  const { hoje: dash, fluxo, loading } = useDashboard()
+  const { usuario } = useAuth()
+
+  if (loading || !dash) {
+    return <div className="p-6 max-w-6xl mx-auto animate-pulse text-sm" style={{ color: 'var(--slate-500)' }}>Carregando dashboard...</div>
+  }
 
   return (
     <div className="p-6 max-w-6xl mx-auto" style={{ fontFamily: 'var(--font-sans)' }}>
@@ -35,7 +42,7 @@ export function DashboardPage() {
             Dashboard
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--slate-500)' }}>
-            {EMPRESA.razaoSocial} · {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
+            {(usuario as any)?.nome ?? 'Empresa'} · {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
           </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
@@ -60,7 +67,7 @@ export function DashboardPage() {
             {/* Decorative blob */}
             <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl -translate-y-4 translate-x-4 opacity-30"
                  style={{ background: card.color }} />
-            <div className="text-2xl mb-3">{card.icon}</div>
+            <div className="mb-3"><card.Icon size={26} color={card.color} strokeWidth={2.2} /></div>
             <div className="text-3xl font-bold mb-1"
                  style={{ fontFamily: 'var(--font-display)', color: 'var(--slate-900)', letterSpacing: '-0.02em' }}>
               {dash[card.key as keyof typeof dash] as number}
@@ -86,7 +93,7 @@ export function DashboardPage() {
             </span>
           </div>
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={FLUXO_HORA} margin={{ left: -20, right: 4 }}>
+            <AreaChart data={fluxo} margin={{ left: -20, right: 4 }}>
               <defs>
                 <linearGradient id="gAgend" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor="#22c55e" stopOpacity={0.2} />

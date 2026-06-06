@@ -12,6 +12,29 @@ export class UnidadesService {
     private unidadeRepo: Repository<Unidade>,
   ) {}
 
+  async findAllPublicas() {
+    const unidades = await this.unidadeRepo
+      .createQueryBuilder('unidade')
+      .leftJoinAndSelect('unidade.docas', 'docas', 'docas.ativa = true')
+      .getMany();
+
+    return unidades.map((u) => ({
+      id: u.id,
+      nome: u.nome,
+      cidade: u.cidade,
+      estado: u.estado,
+      endereco: u.endereco,
+      totalDocas: u.docas.length,
+      docas: u.docas.map((d) => ({
+        id: d.id,
+        nome: d.nome,
+        tipoCarga: d.tipoCarga,
+        capacidadeTonHora: d.capacidadeTonHora,
+        ativa: d.ativa,
+      })),
+    }));
+  }
+
   async findAll(empresaId: string) {
     const unidades = await this.unidadeRepo
       .createQueryBuilder('unidade')

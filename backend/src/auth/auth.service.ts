@@ -110,6 +110,9 @@ export class AuthService {
   }
 
   async getMeMotorista(userId: string) {
-    return this.motoristaRepo.findOne({ where: { id: userId } });
+    return this.motoristaRepo.findOne({
+      where: { id: userId },
+      relations: { veiculos: true },
+    });
   }
 }

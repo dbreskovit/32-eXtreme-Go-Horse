@@ -1,11 +1,20 @@
 import axios from 'axios'
+import { USE_MOCK } from '../mocks/config'
+import { mockAdapter } from '../mocks/adapter'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api'
 
 export const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  // Modo apresentação: responde via localStorage, sem backend
+  ...(USE_MOCK ? { adapter: mockAdapter } : {}),
 })
+
+if (USE_MOCK) {
+  // eslint-disable-next-line no-console
+  console.info('%c[FluxoGrão] Modo MOCK ativo — dados em localStorage (sem backend).', 'color:#16a34a;font-weight:bold')
+}
 
 // Injeta JWT em todas as requisições autenticadas
 api.interceptors.request.use((config) => {

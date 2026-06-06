@@ -30,6 +30,8 @@ import { GatewayModule } from './gateway/gateway.module';
         url: config.getOrThrow<string>('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: config.get('NODE_ENV') !== 'production',
+        migrationsRun: false,
+        migrations: [__dirname + '/migrations/*{.ts,.js}'],
         ssl:
           config.get('NODE_ENV') === 'production'
             ? { rejectUnauthorized: false }

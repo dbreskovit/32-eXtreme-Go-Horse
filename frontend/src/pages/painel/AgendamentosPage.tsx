@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
-import { AGENDAMENTOS } from '../../mocks/data'
+import { useAgendamentos } from '../../hooks/useAgendamentos'
 import { StatusBadge } from '../../components/StatusBadge'
 import { format } from 'date-fns'
 import type { Agendamento, StatusAgendamento } from '../../types'
@@ -29,16 +29,14 @@ const CHIP_COLORS: Record<string, { bg: string; color: string; border: string }>
 
 export function AgendamentosPage() {
   const [filtro, setFiltro] = useState('')
-  const [agendamentos, setAgendamentos] = useState(AGENDAMENTOS)
-
-  const lista = filtro ? agendamentos.filter(a => a.status === filtro) : agendamentos
+  const { items: agendamentos, avancarStatus, loading } = useAgendamentos({ status: filtro || undefined })
 
   function avancar(ag: Agendamento) {
-    const m: Partial<Record<StatusAgendamento, StatusAgendamento>> = {
-      agendado: 'em_patio', em_patio: 'descarregando', descarregando: 'concluido',
+    const m: Partial<Record<StatusAgendamento, 'checkin' | 'descarregando' | 'finalizar'>> = {
+      agendado: 'checkin', em_patio: 'descarregando', descarregando: 'finalizar',
     }
-    const s = m[ag.status]
-    if (s) setAgendamentos(prev => prev.map(a => a.id === ag.id ? { ...a, status: s } : a))
+    const acao = m[ag.status]
+    if (acao) avancarStatus(ag.id, acao)
   }
 
   return (
@@ -49,7 +47,7 @@ export function AgendamentosPage() {
           <h1 className="font-bold" style={{ fontFamily: 'var(--font-display)', fontSize: '1.875rem', color: 'var(--slate-900)', letterSpacing: '-0.025em' }}>
             Agendamentos
           </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--slate-500)' }}>{lista.length} registros encontrados</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--slate-500)' }}>{agendamentos.length} registros encontrados</p>
         </div>
 
         {/* Filter chips */}
@@ -88,7 +86,10 @@ export function AgendamentosPage() {
             </tr>
           </thead>
           <tbody>
-            {lista.map((ag, i) => (
+            {loading && (
+              <tr><td colSpan={8} className="text-center py-8 text-sm animate-pulse text-slate-400">Carregando...</td></tr>
+            )}
+            {!loading && agendamentos.map((ag: any, i: number) => (
               <motion.tr key={ag.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}
                          style={{ borderBottom: '1px solid var(--slate-50)' }}
                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--slate-50)')}
@@ -132,7 +133,7 @@ export function AgendamentosPage() {
           </tbody>
         </table>
 
-        {lista.length === 0 && (
+        {!loading && agendamentos.length === 0 && (
           <div className="text-center py-16">
             <div className="text-5xl mb-3 opacity-20">≡</div>
             <p className="text-sm font-medium" style={{ color: 'var(--slate-400)' }}>Nenhum agendamento encontrado</p>

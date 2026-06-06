@@ -20,6 +20,16 @@
 
 ---
 
+> [!IMPORTANT]
+> **O frontend está rodando com dados mockados (persistidos em `localStorage`).**
+> Houve um problema na integração com o backend, então, para garantir a demonstração do pitch, o front opera de forma autônoma — sem depender da API.
+>
+> **Backend e frontend rodam de forma totalmente independente:** o backend (NestJS + PostgreSQL) sobe e funciona normalmente por conta própria, e o frontend funciona por conta própria em modo mock. Para reconectar o front à API real, basta definir `VITE_MOCK=false` no `frontend/.env`.
+>
+> Detalhes da camada de mock em [`frontend/src/mocks/`](frontend/src/mocks/) (`config.ts`, `db.ts`, `adapter.ts`).
+
+---
+
 ## 📑 Índice
 
 - [Visão Geral](#-visão-geral)
@@ -245,7 +255,9 @@ PORT=3000
 
 **Frontend** — crie `frontend/.env`:
 ```env
-VITE_API_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000/api
+# Modo apresentação (dados em localStorage, sem backend). Use "false" para conectar à API real.
+VITE_MOCK=true
 ```
 
 ### 3. Subir o banco de dados
@@ -283,10 +295,15 @@ Frontend disponível em: `http://localhost:5173`
 
 ### Credenciais de teste (modo mock)
 
+> O frontend já vem em **modo mock** por padrão (dados em `localStorage`, sem backend).
+> Para usar a API real, defina `VITE_MOCK=false` em `frontend/.env`.
+
 | Tipo | Usuário | Senha |
 |---|---|---|
-| Empresa | qualquer e-mail | qualquer senha |
-| Motorista | qualquer e-mail | qualquer senha |
+| Empresa | `carlos@empresaxpto.com.br` | `senha123` |
+| Motorista | `(55) 99876-5432` (telefone) | `ABC-1D23` (placa) |
+
+> No modo mock, o login de **motorista** aceita qualquer telefone + placa (cria o cadastro na hora, igual ao backend real).
 
 ---
 

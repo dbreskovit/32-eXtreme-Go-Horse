@@ -8,8 +8,8 @@ export function LoginPage() {
   const [tab, setTab] = useState<'empresa' | 'motorista'>(
     params.get('tab') === 'motorista' ? 'motorista' : 'empresa'
   )
-  const [email, setEmail] = useState('carlos@cotripal.com.br')
-  const [senha, setSenha] = useState('123456')
+  const [email, setEmail] = useState('carlos@empresaxpto.com.br')
+  const [senha, setSenha] = useState('senha123')
   const [telefone, setTelefone] = useState('(55) 99876-5432')
   const [placa, setPlaca] = useState('ABC-1D23')
   const [loading, setLoading] = useState(false)
@@ -41,42 +41,32 @@ export function LoginPage() {
     <div className="min-h-screen flex" style={{ background: 'var(--slate-50)' }}>
 
       {/* Left panel — decorative */}
-      <div className="hidden lg:flex flex-col justify-between w-[45%] p-14 relative overflow-hidden"
-           style={{ background: 'var(--slate-900)' }}>
-        {/* Blobs */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute rounded-full blur-3xl opacity-30"
-               style={{ width: 500, height: 500, bottom: '0%', left: '-10%',
-                        background: 'radial-gradient(circle, rgba(22,163,74,0.4) 0%, transparent 65%)' }} />
-          <div className="absolute rounded-full blur-3xl opacity-20"
-               style={{ width: 350, height: 350, top: '10%', right: '-5%',
-                        background: 'radial-gradient(circle, rgba(251,191,36,0.5) 0%, transparent 65%)' }} />
-        </div>
+      <div className="hidden lg:flex items-center justify-center w-[45%] p-14 relative overflow-hidden"
+           style={{
+             backgroundImage: 'url(/login-bg.png)',
+             backgroundSize: 'cover',
+             backgroundPosition: 'center',
+           }}>
+        {/* Dark overlay for readability and premium feel */}
+        <div className="absolute inset-0" style={{ background: 'rgba(15, 23, 42, 0.65)' }} />
 
-        <div className="relative">
+        {/* Center content */}
+        <div className="relative z-10 text-center">
           <button onClick={() => navigate('/')}
-                  style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', letterSpacing: '-0.01em' }}>
+                  className="transition-transform hover:scale-105"
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '4.5rem',
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1,
+                    cursor: 'pointer',
+                  }}>
             <span style={{ color: '#22c55e' }}>Fluxo</span>
             <span style={{ color: '#fff' }}>Grão</span>
           </button>
-        </div>
-
-        <div className="relative">
-          <blockquote style={{
-            fontFamily: 'var(--font-display)', fontSize: '2.1rem', color: '#fff',
-            lineHeight: 1.25, letterSpacing: '-0.025em'
-          }}>
-            "A solução é<br />
-            <span style={{ color: '#fbbf24', fontStyle: 'italic' }}>programação,</span><br />
-            não tem saída."
-          </blockquote>
-          <cite className="block mt-5 text-sm not-italic" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            — Sopesp, sobre congestionamento no T-Grão Santos
-          </cite>
-        </div>
-
-        <div className="relative text-xs font-medium" style={{ color: 'rgba(255,255,255,0.3)' }}>
-          Code Race 2026 · AMF
+          <p className="text-sm mt-3 font-medium uppercase tracking-widest" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            Agendamento de Fluxo Graneleiro
+          </p>
         </div>
       </div>
 
@@ -158,7 +148,7 @@ export function LoginPage() {
             </button>
           </p>
           <p className="text-center text-xs mt-4" style={{ color: 'var(--slate-300)' }}>
-            Demo: qualquer credencial funciona
+            Empresa: carlos@empresaxpto.com.br / senha123
           </p>
         </motion.div>
       </div>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { AGENDAMENTOS } from '../../mocks/data'
+import { useAgendamentos } from '../../hooks/useAgendamentos'
 import { StatusBadge } from '../../components/StatusBadge'
 import { format } from 'date-fns'
 import type { Agendamento, StatusAgendamento } from '../../types'
@@ -15,7 +15,7 @@ export function GuaritaPage() {
   const [busca, setBusca] = useState('')
   const [encontrado, setEncontrado] = useState<Agendamento | null>(null)
   const [erro, setErro] = useState('')
-  const [agendamentos, setAgendamentos] = useState(AGENDAMENTOS)
+  const { items: agendamentos, avancarStatus, loading } = useAgendamentos()
 
   function buscar(e: React.FormEvent) {
     e.preventDefault()
@@ -27,16 +27,16 @@ export function GuaritaPage() {
     ag ? (setEncontrado(ag), setErro('')) : (setEncontrado(null), setErro('Não encontrado.'))
   }
 
-  function avancar() {
+  async function avancar() {
     if (!encontrado) return
-    const prox: Partial<Record<StatusAgendamento, StatusAgendamento>> = {
-      agendado: 'em_patio', em_patio: 'descarregando', descarregando: 'concluido',
+    const m: Partial<Record<StatusAgendamento, 'checkin' | 'descarregando' | 'finalizar'>> = {
+      agendado: 'checkin', em_patio: 'descarregando', descarregando: 'finalizar',
     }
-    const novo = prox[encontrado.status]
-    if (!novo) return
-    const upd = { ...encontrado, status: novo }
-    setEncontrado(upd)
-    setAgendamentos(prev => prev.map(a => a.id === encontrado.id ? upd : a))
+    const acao = m[encontrado.status]
+    if (!acao) return
+    await avancarStatus(encontrado.id, acao)
+    setEncontrado(null)
+    setBusca('')
   }
 
   const emPatio = agendamentos.filter(a => ['em_patio', 'descarregando'].includes(a.status))
@@ -104,9 +104,9 @@ export function GuaritaPage() {
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     {[
                       ['Motorista', encontrado.motorista.nome],
-                      ['Score', `${encontrado.motorista.scorePontualidade}% ⭐`],
+                      ['Score', `${encontrado.motorista.scorePontualidade ?? 100}% ⭐`],
                       ['Placa', encontrado.veiculo.placa],
-                      ['Tipo', encontrado.veiculo.tipo],
+                      ['Tipo', encontrado.veiculo.tipo || 'Truck'],
                       ['Doca', encontrado.doca.nome],
                       ['Volume', `${encontrado.volumeTon}t`],
                     ].map(([k, v]) => (
