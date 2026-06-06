@@ -1,4 +1,8 @@
 .agent/
+.claude/commands/
+
+# Raiz
+.env
 
 # Backend
 backend/node_modules/
