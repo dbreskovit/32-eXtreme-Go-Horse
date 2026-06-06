@@ -13,23 +13,16 @@ import { AppService } from './app.service';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const isProduction = config.get('NODE_ENV') === 'production';
-        if (isProduction) {
-          return {
-            type: 'postgres',
-            url: config.get<string>('DATABASE_URL'),
-            autoLoadEntities: true,
-            synchronize: false,
-          };
-        }
-        return {
-          type: 'better-sqlite3',
-          database: config.get<string>('DATABASE_PATH', 'data/fluxograo.db'),
-          autoLoadEntities: true,
-          synchronize: true,
-        };
-      },
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        url: config.getOrThrow<string>('DATABASE_URL'),
+        autoLoadEntities: true,
+        synchronize: config.get('NODE_ENV') !== 'production',
+        ssl:
+          config.get('NODE_ENV') === 'production'
+            ? { rejectUnauthorized: false }
+            : false,
+      }),
     }),
   ],
   controllers: [AppController],
