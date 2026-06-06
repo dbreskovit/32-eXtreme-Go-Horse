@@ -72,7 +72,7 @@ export function RegisterPage() {
           {step === 2 && (
             <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.3 }} className="space-y-3">
-              {PLANOS.map((p, i) => (
+              {PLANOS.map((p) => (
                 <div key={p.id} onClick={() => setPlano(p)}
                      className="cursor-pointer p-5 rounded-xl transition-all"
                      style={{

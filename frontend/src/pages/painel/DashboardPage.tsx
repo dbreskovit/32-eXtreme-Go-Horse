@@ -15,10 +15,11 @@ const CARDS = [
   { key: 'concluidos',     label: 'Concluídos', icon: '✓',  accent: '#22c55e' },
 ]
 
+const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number]
 const stagger = (i: number) => ({
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: i * 0.07 },
+  transition: { duration: 0.5, ease: EASE, delay: i * 0.07 },
 })
 
 export function DashboardPage() {

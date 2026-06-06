@@ -1,200 +1,229 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import { UNIDADES, DOCAS, SLOTS } from '../../mocks/data'
 import { useAuth } from '../../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import type { Unidade, Doca, Slot } from '../../types'
 
-type Step = 1 | 2 | 3 | 4 | 5
+type Step = 1 | 2 | 3 | 4
+
+const STEPS = ['Unidade', 'Doca', 'Horário', 'Confirmar']
 
 export function AgendarPage() {
-  const { motorista } = useAuth()
+  const { motorista, logout } = useAuth()
+  const navigate = useNavigate()
   const [step, setStep] = useState<Step>(1)
   const [unidade, setUnidade] = useState<Unidade | null>(null)
   const [doca, setDoca] = useState<Doca | null>(null)
   const [slot, setSlot] = useState<Slot | null>(null)
   const [volume, setVolume] = useState('')
-  const [concluido, setConcluido] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [done, setDone] = useState(false)
+  const [codigo] = useState(() => `FG-${2900 + Math.floor(Math.random() * 99)}`)
   const [busca, setBusca] = useState('')
 
-  const unidadesFiltradas = busca
+  const unidades = busca
     ? UNIDADES.filter(u => u.nome.toLowerCase().includes(busca.toLowerCase()) || u.cidade.toLowerCase().includes(busca.toLowerCase()))
     : UNIDADES
-
-  const docasDaUnidade = unidade ? DOCAS.filter(d => d.unidadeId === unidade.id && d.ativa) : []
+  const docas = unidade ? DOCAS.filter(d => d.unidadeId === unidade.id && d.ativa) : []
 
   async function confirmar() {
-    await new Promise(r => setTimeout(r, 800))
-    setConcluido(true)
+    setLoading(true)
+    await new Promise(r => setTimeout(r, 900))
+    setDone(true)
   }
 
-  if (concluido) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center">
-          <div className="text-6xl mb-4">✅</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Agendado!</h2>
-          <p className="text-gray-500 text-sm mb-6">
-            Seu agendamento foi confirmado. Apresente o código na guarita.
-          </p>
-          <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-6">
-            <div className="text-xs text-gray-400 mb-1">Seu código</div>
-            <div className="font-mono text-3xl font-bold text-green-700 tracking-widest">FG-{Math.floor(2900 + Math.random() * 99)}</div>
-          </div>
-          <div className="text-left space-y-2 text-sm text-gray-600 bg-gray-50 rounded-xl p-4">
-            <div><span className="text-gray-400">Unidade:</span> {unidade?.nome}</div>
-            <div><span className="text-gray-400">Doca:</span> {doca?.nome}</div>
-            <div><span className="text-gray-400">Horário:</span> {slot?.horaInicio} – {slot?.horaFim}</div>
-            <div><span className="text-gray-400">Volume:</span> {volume}t</div>
-          </div>
-          <button
-            onClick={() => { setConcluido(false); setStep(1); setUnidade(null); setDoca(null); setSlot(null); setVolume(''); }}
-            className="w-full mt-6 py-3 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            Novo agendamento
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-green-700 text-white px-4 py-4">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <span className="text-xl">🌾</span>
-          <div>
-            <div className="font-semibold">Agendar Descarga</div>
-            <div className="text-green-200 text-xs">{motorista?.nome}</div>
+  if (done) return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-12"
+         style={{ background: 'var(--earth)', fontFamily: 'var(--font-sans)' }}>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, ease: [0.22,1,0.36,1] }}
+                  className="w-full max-w-sm rounded-2xl p-8 text-center"
+                  style={{ background: 'var(--field)', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl mx-auto mb-5"
+             style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>✓</div>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', color: 'var(--cream)', letterSpacing: '-0.02em' }}>
+          Agendado!
+        </h2>
+        <p className="text-sm my-3" style={{ color: 'var(--bark)' }}>Apresente este código na guarita.</p>
+        <div className="rounded-xl p-6 my-5"
+             style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
+          <div className="text-xs mb-1 uppercase tracking-widest" style={{ color: 'var(--bark)' }}>Seu código</div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '2rem', fontWeight: 700, color: 'var(--grain)', letterSpacing: '0.08em' }}>
+            {codigo}
           </div>
         </div>
-      </div>
-
-      {/* Steps indicator */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3">
-        <div className="max-w-lg mx-auto flex justify-between">
-          {(['Unidade', 'Doca', 'Horário', 'Confirmar'] as const).map((label, i) => (
-            <div key={label} className="flex items-center gap-1.5">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                i + 1 < step ? 'bg-green-600 text-white' :
-                i + 1 === step ? 'bg-green-100 text-green-700 ring-2 ring-green-500' :
-                'bg-gray-100 text-gray-400'
-              }`}>
-                {i + 1 < step ? '✓' : i + 1}
-              </div>
-              <span className={`text-xs hidden sm:block ${i + 1 <= step ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>
-                {label}
-              </span>
+        <div className="text-xs text-left space-y-2 rounded-xl p-4 mb-6"
+             style={{ background: 'rgba(255,255,255,0.04)' }}>
+          {[['Unidade', unidade?.nome], ['Doca', doca?.nome], ['Horário', `${slot?.horaInicio}–${slot?.horaFim}`], ['Volume', `${volume}t`]].map(([k, v]) => (
+            <div key={k} className="flex justify-between">
+              <span style={{ color: 'var(--bark)' }}>{k}</span>
+              <span style={{ color: 'var(--cream)' }}>{v}</span>
             </div>
           ))}
         </div>
+        <div className="flex gap-3">
+          <button onClick={() => navigate('/motorista/meus')}
+                  className="flex-1 py-3 rounded-xl text-sm font-semibold"
+                  style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'var(--cream)' }}>
+            Meus agendamentos
+          </button>
+          <button onClick={() => { setDone(false); setStep(1); setUnidade(null); setDoca(null); setSlot(null); setVolume(''); }}
+                  className="flex-1 py-3 rounded-xl text-sm font-semibold"
+                  style={{ background: 'var(--grain)', color: 'var(--earth)' }}>
+            Novo
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )
+
+  return (
+    <div className="min-h-screen" style={{ background: 'var(--earth)', fontFamily: 'var(--font-sans)' }}>
+      {/* Header */}
+      <div className="px-4 pt-safe pt-4 pb-4 flex items-center justify-between"
+           style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex items-center gap-3">
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--harvest)' }}>FluxoGrão</span>
+          <span className="w-px h-4" style={{ background: 'rgba(255,255,255,0.1)' }} />
+          <span className="text-sm" style={{ color: 'var(--bark)' }}>{motorista?.nome}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/motorista/meus')} className="text-xs" style={{ color: 'var(--bark)' }}>Meus agendamentos</button>
+          <button onClick={logout} className="text-xs" style={{ color: 'var(--bark)' }}>Sair</button>
+        </div>
       </div>
 
+      {/* Steps */}
+      <div className="flex px-4 py-3 gap-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        {STEPS.map((label, i) => (
+          <div key={label} className="flex items-center gap-1 flex-1">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-all"
+                   style={{
+                     background: i + 1 < step ? 'var(--blade)' : i + 1 === step ? 'var(--grain)' : 'rgba(255,255,255,0.1)',
+                     color: i + 1 <= step ? 'var(--earth)' : 'var(--bark)',
+                   }}>
+                {i + 1 < step ? '✓' : i + 1}
+              </div>
+              <span className="text-xs hidden sm:block" style={{ color: i + 1 <= step ? 'var(--cream)' : 'var(--bark)' }}>{label}</span>
+            </div>
+            {i < STEPS.length - 1 && <div className="flex-1 h-px mx-1" style={{ background: 'rgba(255,255,255,0.08)' }} />}
+          </div>
+        ))}
+      </div>
+
+      {/* Content */}
       <div className="max-w-lg mx-auto px-4 py-6">
-        {/* Step 1: Unidade */}
-        {step === 1 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-gray-900">Onde você vai descarregar?</h2>
-            <input
-              value={busca} onChange={e => setBusca(e.target.value)}
-              placeholder="Buscar por nome ou cidade..."
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <div className="space-y-3">
-              {unidadesFiltradas.map(u => (
-                <button
-                  key={u.id}
-                  onClick={() => { setUnidade(u); setStep(2) }}
-                  className="w-full text-left p-4 bg-white rounded-xl border border-gray-100 hover:border-green-300 hover:shadow-sm transition-all"
-                >
-                  <div className="font-medium text-gray-900">{u.nome}</div>
-                  <div className="text-sm text-gray-500 mt-0.5">📍 {u.cidade}, {u.estado}</div>
-                  <div className="text-xs text-green-600 mt-1">{u.totalDocas} docas disponíveis</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Doca */}
-        {step === 2 && (
-          <div className="space-y-4">
-            <button onClick={() => setStep(1)} className="text-sm text-green-600 font-medium">← Voltar</button>
-            <h2 className="text-lg font-bold text-gray-900">Escolha a doca</h2>
-            <p className="text-sm text-gray-500">{unidade?.nome}</p>
-            <div className="space-y-3">
-              {docasDaUnidade.map(d => (
-                <button
-                  key={d.id}
-                  onClick={() => { setDoca(d); setStep(3) }}
-                  className="w-full text-left p-4 bg-white rounded-xl border border-gray-100 hover:border-green-300 hover:shadow-sm transition-all"
-                >
-                  <div className="font-medium text-gray-900">{d.nome}</div>
-                  <div className="text-sm text-gray-500 mt-0.5">Carga: {d.tipoCarga} · {d.capacidadeTonHora}t/h</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Horário */}
-        {step === 3 && (
-          <div className="space-y-4">
-            <button onClick={() => setStep(2)} className="text-sm text-green-600 font-medium">← Voltar</button>
-            <h2 className="text-lg font-bold text-gray-900">Escolha o horário</h2>
-            <p className="text-sm text-gray-500">{doca?.nome}</p>
-            <div className="grid grid-cols-2 gap-3">
-              {SLOTS.map((s, i) => (
-                <button
-                  key={i}
-                  disabled={s.ocupado}
-                  onClick={() => { setSlot(s); setStep(4) }}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    s.ocupado
-                      ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
-                      : slot === s
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-100 bg-white hover:border-green-300'
-                  }`}
-                >
-                  <div className="font-semibold text-sm text-gray-900">{s.horaInicio} – {s.horaFim}</div>
-                  <div className={`text-xs mt-1 font-medium ${s.ocupado ? 'text-red-400' : 'text-green-600'}`}>
-                    {s.ocupado ? 'Lotado' : `${s.capacidadeDisponivel}t disponível`}
+        <AnimatePresence mode="wait">
+          {step === 1 && (
+            <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.25 }} className="space-y-4">
+              <h2 className="font-semibold" style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--cream)', letterSpacing: '-0.01em' }}>
+                Onde vai descarregar?
+              </h2>
+              <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar cooperativa ou cidade..."
+                     className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                     style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--cream)', fontFamily: 'var(--font-sans)' }} />
+              {unidades.map(u => (
+                <button key={u.id} onClick={() => { setUnidade(u); setStep(2) }}
+                        className="w-full text-left p-4 rounded-xl transition-all"
+                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                        onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--grain)')}
+                        onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}>
+                  <div className="font-semibold text-sm" style={{ color: 'var(--cream)' }}>{u.nome}</div>
+                  <div className="text-xs mt-0.5 flex items-center gap-3" style={{ color: 'var(--bark)' }}>
+                    <span>📍 {u.cidade}, {u.estado}</span>
+                    <span style={{ color: '#22c55e' }}>{u.totalDocas} docas</span>
                   </div>
                 </button>
               ))}
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
 
-        {/* Step 4: Confirmar */}
-        {step === 4 && (
-          <div className="space-y-4">
-            <button onClick={() => setStep(3)} className="text-sm text-green-600 font-medium">← Voltar</button>
-            <h2 className="text-lg font-bold text-gray-900">Confirmar agendamento</h2>
-            <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3 text-sm">
-              <div className="flex justify-between"><span className="text-gray-500">Unidade</span><span className="font-medium text-gray-900">{unidade?.nome}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Doca</span><span className="font-medium text-gray-900">{doca?.nome}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Horário</span><span className="font-medium text-gray-900">{slot?.horaInicio} – {slot?.horaFim}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Veículo</span><span className="font-medium text-gray-900">ABC-1D23 · Bitrem</span></div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Volume estimado (toneladas)</label>
-              <input
-                type="number" value={volume} onChange={e => setVolume(e.target.value)}
-                placeholder="Ex: 42"
-                min="1" max={slot?.capacidadeDisponivel}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-              {slot && <p className="text-xs text-gray-400 mt-1">Máximo disponível: {slot.capacidadeDisponivel}t</p>}
-            </div>
-            <button
-              onClick={confirmar} disabled={!volume}
-              className="w-full py-4 bg-green-600 text-white font-bold text-lg rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors"
-            >
-              Confirmar agendamento
-            </button>
-          </div>
-        )}
+          {step === 2 && (
+            <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }} className="space-y-4">
+              <button onClick={() => setStep(1)} className="text-xs font-semibold" style={{ color: 'var(--grain)' }}>← Voltar</button>
+              <h2 className="font-semibold" style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--cream)', letterSpacing: '-0.01em' }}>
+                Escolha a doca
+              </h2>
+              <p className="text-xs" style={{ color: 'var(--bark)' }}>{unidade?.nome}</p>
+              {docas.map(d => (
+                <button key={d.id} onClick={() => { setDoca(d); setStep(3) }}
+                        className="w-full text-left p-4 rounded-xl transition-all"
+                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                        onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--grain)')}
+                        onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}>
+                  <div className="font-semibold text-sm" style={{ color: 'var(--cream)' }}>{d.nome}</div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--bark)' }}>{d.tipoCarga} · {d.capacidadeTonHora}t/h</div>
+                </button>
+              ))}
+            </motion.div>
+          )}
+
+          {step === 3 && (
+            <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }} className="space-y-4">
+              <button onClick={() => setStep(2)} className="text-xs font-semibold" style={{ color: 'var(--grain)' }}>← Voltar</button>
+              <h2 className="font-semibold" style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--cream)', letterSpacing: '-0.01em' }}>
+                Escolha o horário
+              </h2>
+              <p className="text-xs mb-2" style={{ color: 'var(--bark)' }}>{doca?.nome}</p>
+              <div className="grid grid-cols-2 gap-3">
+                {SLOTS.map((s, i) => (
+                  <button key={i} disabled={s.ocupado} onClick={() => { setSlot(s); setStep(4) }}
+                          className="p-4 rounded-xl text-left transition-all"
+                          style={{
+                            background: s.ocupado ? 'rgba(255,255,255,0.02)' : slot === s ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.04)',
+                            border: s.ocupado ? '1px solid rgba(255,255,255,0.04)' : slot === s ? '1px solid var(--grain)' : '1px solid rgba(255,255,255,0.08)',
+                            opacity: s.ocupado ? 0.4 : 1, cursor: s.ocupado ? 'not-allowed' : 'pointer',
+                          }}>
+                    <div className="font-bold text-sm" style={{ fontFamily: 'var(--font-mono)', color: s.ocupado ? 'var(--bark)' : 'var(--cream)' }}>
+                      {s.horaInicio}
+                    </div>
+                    <div className="text-xs mt-0.5 font-semibold"
+                         style={{ color: s.ocupado ? '#ef4444' : '#22c55e' }}>
+                      {s.ocupado ? 'Lotado' : `${s.capacidadeDisponivel}t livre`}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {step === 4 && (
+            <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }} className="space-y-4">
+              <button onClick={() => setStep(3)} className="text-xs font-semibold" style={{ color: 'var(--grain)' }}>← Voltar</button>
+              <h2 className="font-semibold" style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--cream)', letterSpacing: '-0.01em' }}>
+                Confirmar agendamento
+              </h2>
+              <div className="rounded-xl p-4 space-y-2.5 text-xs"
+                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                {[['Unidade', unidade?.nome], ['Doca', doca?.nome], ['Horário', `${slot?.horaInicio} – ${slot?.horaFim}`], ['Veículo', 'ABC-1D23 · Bitrem']].map(([k, v]) => (
+                  <div key={k} className="flex justify-between">
+                    <span style={{ color: 'var(--bark)' }}>{k}</span>
+                    <span className="font-semibold" style={{ color: 'var(--cream)' }}>{v}</span>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-2 uppercase tracking-widest" style={{ color: 'var(--bark)' }}>
+                  Volume estimado (toneladas)
+                </label>
+                <input type="number" value={volume} onChange={e => setVolume(e.target.value)}
+                       placeholder="Ex: 42" min="1"
+                       className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                       style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--cream)', fontFamily: 'var(--font-sans)' }}
+                       onFocus={e => (e.currentTarget.style.borderColor = 'var(--grain)')}
+                       onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')} />
+              </div>
+              <button onClick={confirmar} disabled={!volume || loading}
+                      className="w-full py-4 rounded-xl font-bold text-sm transition-all disabled:opacity-40"
+                      style={{ background: 'var(--grain)', color: 'var(--earth)' }}>
+                {loading ? 'Confirmando...' : 'Confirmar agendamento'}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )

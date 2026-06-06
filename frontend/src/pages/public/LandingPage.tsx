@@ -2,10 +2,11 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { PLANOS } from '../../mocks/data'
 
+const ease = [0.22, 1, 0.36, 1] as [number, number, number, number]
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1], delay },
+  transition: { duration: 0.7, ease, delay },
 })
 
 const STATS = [
