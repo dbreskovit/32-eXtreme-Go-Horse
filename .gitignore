@@ -1,4 +1,5 @@
 .agent/
+.claude/commands/
 
 # Raiz
 .env
